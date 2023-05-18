@@ -142,12 +142,20 @@ impl DrawState<'_> {
     fn index(&mut self) {
         // these encode the slices of `" > "`, `" {n} "`, or `"   "` in a compact form.
         // Yes, this is a hack, but it makes me feel happy
-        static SLICES: &str = " > 1 2 3 4 5 6 7 8 9   ";
-
+        static SLICES: &str = " 1 2 3 4 5 6 7 8 9   ";
         let i = self.y as usize + self.state.offset;
+
+        if i == 0 {
+            self.draw("  ", Style::default().fg(Color::Rgb(200, 200, 200)));
+            return;
+        }
+
         let i = i.checked_sub(self.state.selected);
-        let i = i.unwrap_or(10).min(10) * 2;
-        self.draw(&SLICES[i..i + 3], Style::default());
+        let i = i.unwrap_or(9).min(9) * 2;
+        self.draw(
+            &SLICES[i..i + 3],
+            Style::default().fg(Color::Rgb(111, 111, 111)),
+        );
     }
 
     fn duration(&mut self, h: &History) {
@@ -183,11 +191,11 @@ impl DrawState<'_> {
     }
 
     fn command(&mut self, h: &History) {
-        let mut style = Style::default();
+        let mut style = Style::default().fg(Color::Rgb(200, 200, 200));
         if !self.alternate_highlight && (self.y as usize + self.state.offset == self.state.selected)
         {
             // if not applying alternative highlighting to the whole row, color the command
-            style = style.fg(Color::Red).add_modifier(Modifier::BOLD);
+            style = style.fg(Color::White).add_modifier(Modifier::BOLD);
         }
 
         for section in h.command.escape_control().split_ascii_whitespace() {
