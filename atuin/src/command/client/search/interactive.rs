@@ -440,8 +440,24 @@ impl State {
         let mode_width = MAX_WIDTH - pref.len();
         // sanity check to ensure we don't exceed the layout limits
         debug_assert!(mode_width >= mode.len(), "mode name '{mode}' is too long!");
-        let input = format!("[{pref}{mode:^mode_width$}] {}", self.search.input.as_str(),);
+
+        let mode = format!("{pref}{mode:^mode_width$}");
+
+        let input = Spans::from(vec![
+            Span::styled("", Style::default().fg(Color::DarkGray)),
+            Span::styled(
+                mode,
+                Style::default()
+                    .bg(Color::DarkGray)
+                    .add_modifier(Modifier::ITALIC),
+            ),
+            Span::styled("", Style::default().fg(Color::DarkGray)),
+            " ".into(),
+            self.search.input.as_str().into(),
+        ]);
+
         let input = Paragraph::new(input);
+
         if style.compact {
             input
         } else if style.invert {
