@@ -90,6 +90,7 @@ pub trait Database: Send + Sync + 'static {
         &self,
         search_mode: SearchMode,
         filter: FilterMode,
+        disable_wildcards: bool,
         context: &Context,
         query: &str,
         filter_options: OptFilters,
@@ -349,6 +350,7 @@ impl Database for Sqlite {
         &self,
         search_mode: SearchMode,
         filter: FilterMode,
+        disable_wilcards: bool,
         context: &Context,
         query: &str,
         filter_options: OptFilters,
@@ -379,7 +381,12 @@ impl Database for Sqlite {
         };
 
         let orig_query = query;
-        let query = query.replace('*', "%"); // allow wildcard char
+        let query = query.replace('%', "\\%").replace('_', "\\_");
+        let query = if !disable_wilcards {
+            query.replace('*', "%")
+        } else {
+            query
+        };
 
         match search_mode {
             SearchMode::Prefix => sql.and_where_like_left("command", query),
@@ -546,6 +553,7 @@ mod test {
             .search(
                 mode,
                 filter_mode,
+                false,
                 &context,
                 query,
                 OptFilters {
@@ -759,6 +767,7 @@ mod test {
             .search(
                 SearchMode::Fuzzy,
                 FilterMode::Global,
+                false,
                 &context,
                 "",
                 OptFilters {

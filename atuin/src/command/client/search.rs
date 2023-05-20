@@ -61,6 +61,10 @@ pub struct Cmd {
     #[arg(long = "filter-mode")]
     filter_mode: Option<FilterMode>,
 
+    /// Interpret wildcards literally instead of as glob patterns
+    #[arg(long = "disable-wildcards")]
+    disable_wildcards: bool,
+
     /// Allow overriding search mode over config
     #[arg(long = "search-mode")]
     search_mode: Option<SearchMode>,
@@ -146,8 +150,14 @@ impl Cmd {
                 reverse: self.reverse,
             };
 
-            let mut entries =
-                run_non_interactive(settings, opt_filter.clone(), &self.query, &mut db).await?;
+            let mut entries = run_non_interactive(
+                settings,
+                opt_filter.clone(),
+                self.disable_wildcards,
+                &self.query,
+                &mut db,
+            )
+            .await?;
 
             if entries.is_empty() {
                 std::process::exit(1)
@@ -164,9 +174,14 @@ impl Cmd {
                         db.delete(entry.clone()).await?;
                     }
 
-                    entries =
-                        run_non_interactive(settings, opt_filter.clone(), &self.query, &mut db)
-                            .await?;
+                    entries = run_non_interactive(
+                        settings,
+                        opt_filter.clone(),
+                        self.disable_wildcards,
+                        &self.query,
+                        &mut db,
+                    )
+                    .await?;
                 }
             } else {
                 super::history::print_list(&entries, list_mode, self.format.as_deref());
@@ -182,6 +197,7 @@ impl Cmd {
 async fn run_non_interactive(
     settings: &Settings,
     filter_options: OptFilters,
+    disable_wildcards: bool,
     query: &[String],
     db: &mut impl Database,
 ) -> Result<Vec<History>> {
@@ -202,6 +218,7 @@ async fn run_non_interactive(
         .search(
             settings.search_mode,
             settings.filter_mode,
+            disable_wildcards,
             &context,
             query.join(" ").as_str(),
             opt_filter,

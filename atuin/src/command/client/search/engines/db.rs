@@ -19,6 +19,7 @@ impl SearchEngine for Search {
             .search(
                 self.0,
                 state.filter_mode,
+                false,
                 &state.context,
                 state.input.as_str(),
                 OptFilters {
