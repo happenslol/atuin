@@ -128,7 +128,7 @@ impl DrawState<'_> {
         let i = self.y as usize + self.state.offset;
 
         if i == 0 {
-            self.draw("  ", Style::default().fg(Color::Rgb(200, 200, 200)));
+            self.draw(" 󰶻 ", Style::default().fg(Color::Rgb(200, 200, 200)));
             return;
         }
 
