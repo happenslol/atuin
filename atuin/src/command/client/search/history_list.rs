@@ -127,13 +127,16 @@ impl DrawState<'_> {
         static SLICES: &str = " 1 2 3 4 5 6 7 8 9   ";
         let i = self.y as usize + self.state.offset;
 
-        if i == 0 {
-            self.draw(" 󰶻 ", Style::default().fg(Color::Rgb(200, 200, 200)));
+        let i = i.checked_sub(self.state.selected);
+        if i == Some(0) {
+            self.draw("󰶻  ", Style::default().fg(Color::Rgb(200, 200, 200)));
             return;
         }
 
-        let i = i.checked_sub(self.state.selected);
-        let i = i.unwrap_or(9).min(9) * 2;
+        // No need for checked_sub here, we just checked for Some(0) so
+        // this will always be at least Some(1)
+        let i = i.unwrap_or(9) - 1;
+        let i = i.min(9) * 2;
         self.draw(
             &SLICES[i..i + 3],
             Style::default().fg(Color::Rgb(111, 111, 111)),
