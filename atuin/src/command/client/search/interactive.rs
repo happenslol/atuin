@@ -505,7 +505,11 @@ impl State {
         let preview_width = f.size().width - 2;
 
         let preview_height = if settings.show_preview && self.tab_index == 0 {
+            // We need to know the size of the preview to calculate the
+            // remaining height we can use to show results.
             match settings.preview.height_strategy {
+                // Find the height of the longest command in the entire list
+                // of results and use it to calculate preview height
                 PreviewHeightStrategy::AllResults => {
                     let longest_command = results
                         .iter()
@@ -523,6 +527,8 @@ impl State {
                         )
                     }) + border_size * 2
                 }
+                // Use only the currently selected command to calculate
+                // preview height
                 PreviewHeightStrategy::SelectedResult => {
                     let selected_length = results
                         .get(self.results_state.selected())
@@ -782,7 +788,7 @@ impl State {
 
         let mode = format!("{pref}{mode:^mode_width$}");
 
-        let input = Spans::from(vec![
+        let input = Line::from(vec![
             Span::styled("", Style::default().fg(Color::DarkGray)),
             Span::styled(
                 mode,
